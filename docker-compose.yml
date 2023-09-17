@@ -47,8 +47,6 @@ services:
         - PHP_DATE_TIMEZONE=${PHP_DATE_TIMEZONE:-Europe/Moscow}
         - PHP_IDE_CONFIG=serverName=lp-php
         - PUID=${PUID:-1000}
-#      extra_hosts:
-#        - "dockerhost:${DOCKER_HOST_IP:-10.0.75.1}"
       extra_hosts:
         - "host.docker.internal:host-gateway"
       user: www-data:www-data
