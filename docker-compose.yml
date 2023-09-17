@@ -1,0 +1,109 @@
+version: '3.8'
+
+networks:
+  logprojectnetwork:
+    driver: ${NETWORKS_DRIVER:-bridge}
+
+  default:
+    external:
+      name: br0
+
+volumes:
+  composer: {}
+  redis_data: { }
+  db-data: {}
+  public-tmp:
+
+services:
+    nginx:
+      build:
+        args:
+          PUID: "${PUID:-1000}"
+        context: ./docker/nginx
+      container_name: lp-nginx
+      depends_on:
+        - php
+      volumes:
+        - ./:/var/www
+        - ./var/log/nginx:/var/log/nginx:delegated
+        - public-tmp:/var/tmp
+      ports:
+        - "7780:80"
+      working_dir: /var/www
+      networks:
+        - logprojectnetwork
+
+    php:
+      build:
+        args:
+          PUID: "${PUID:-1000}"
+        context: ./docker/php
+      container_name: lp-php
+      volumes:
+        - .:/var/www:rw
+        - composer:/home/www-data/.composer:rw
+        - public-tmp:/var/tmp
+      environment:
+        - PHP_DATE_TIMEZONE=${PHP_DATE_TIMEZONE:-Europe/Moscow}
+        - PHP_IDE_CONFIG=serverName=lp-php
+        - PUID=${PUID:-1000}
+#      extra_hosts:
+#        - "dockerhost:${DOCKER_HOST_IP:-10.0.75.1}"
+      extra_hosts:
+        - "host.docker.internal:host-gateway"
+      user: www-data:www-data
+      depends_on:
+        - database
+      networks:
+        - logprojectnetwork
+
+    fakecron:
+      build:
+        args:
+          PUID: "${PUID:-1000}"
+        context: ./docker/php
+      container_name: lp-fakecron
+      restart: unless-stopped
+      volumes:
+        - .:/var/www:rw
+        - composer:/home/www-data/.composer
+      environment:
+        - PHP_DATE_TIMEZONE=${PHP_DATE_TIMEZONE:-Europe/Moscow}
+        - PHP_IDE_CONFIG=serverName=lp-php
+        - PUID=${PUID:-1000}
+      command: "/bin/sh -c 'while :; do sleep 1m; php /var/www/bin/console ts:run >> /dev/null 2>&1; done'"
+      user: www-data:www-data
+      depends_on:
+        - php
+      networks:
+        - logprojectnetwork
+
+    redis:
+      build:
+        context: ./docker/redis
+      restart: unless-stopped
+      volumes:
+        - redis_data:/data:rw
+      ports:
+        - "127.0.0.1:6389:6379"
+      networks:
+        - logprojectnetwork
+
+    database:
+      image: postgres:15.3
+      container_name: lp-postgres
+      environment:
+        - POSTGRES_DB=logproject
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
+      volumes:
+        - db-data:/var/lib/postgresql/data:rw
+      ports:
+        - "53339:5432"
+      healthcheck:
+        test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+        interval: 5s
+        timeout: 5s
+        retries: 5
+      networks:
+        - logprojectnetwork
