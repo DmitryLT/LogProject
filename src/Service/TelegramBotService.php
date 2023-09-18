@@ -10,8 +10,7 @@ class TelegramBotService
         private string $telegramBotToken,
         private int $telegramChatId,
         private TelegramBotSender $telegramBotSender
-    )
-    {
+    ) {
     }
 
     public function sendTestMessage(): string
