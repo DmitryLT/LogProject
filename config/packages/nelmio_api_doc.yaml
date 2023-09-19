@@ -1,9 +1,20 @@
 nelmio_api_doc:
-  documentation:
-    info:
-      title: log project
-      description: ~
-      version: 1.0.0
-  areas:
-    path_patterns: # an array of regexps (document only routes under /api, except /api/doc)
-      - ^/api(?!/doc$)
+    documentation:
+        info:
+            title: log project
+            description: ~
+            version: 1.0.0
+        components:
+            securitySchemes:
+                Bearer:
+                    type: apiKey
+                    description: 'Authorization: Bearer {jwt}'
+                    scheme: bearer
+                    bearerFormat: JWT
+                    name: Authorization
+                    in: header
+        security:
+           - Bearer: [ ]
+    areas:
+        path_patterns: # an array of regexps (document only routes under /api, except /api/doc)
+            - ^/api(?!/doc$)

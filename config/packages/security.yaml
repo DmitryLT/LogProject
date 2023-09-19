@@ -1,17 +1,53 @@
 security:
+    enable_authenticator_manager: true
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+#        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        Symfony\Component\Security\Core\User\InMemoryUser: plaintext
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         users_in_memory: { memory: null }
+
+        api_doc_in_memory:
+            memory:
+                users:
+                    '%env(resolve:APIDOC_USERNAME)%': { password: '%env(resolve:APIDOC_PASSWORD)%', roles: [ ROLE_API_USER ] }
+        user_provider:
+            entity:
+                class: App\Entity\User
+                property: 'id'
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-        main:
-            lazy: true
-            provider: users_in_memory
+
+        # API DOC
+        api_doc:
+            pattern: ^/api/doc$
+            stateless: true
+            provider: api_doc_in_memory
+            http_basic:
+                realm: 'ApiDoc Area'
+
+        api_doc_json:
+            pattern: ^/api/doc.json$
+            stateless: true
+            security: false
+
+        auth:
+            pattern: ^/api/user/auth$
+            stateless: true
+            security: false
+
+        check_auth:
+            pattern: ^/api/user/checkAuth$
+            stateless: true
+            security: false
+
+        register:
+            pattern: ^/api/user/register$
+            stateless: true
+            security: false
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -22,8 +58,8 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/api/doc, roles: ROLE_API_USER }
+        - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:
