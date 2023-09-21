@@ -6,6 +6,7 @@
 parameters:
     app.telegramBotToken: '%env(TELEGRAM_BOT_TOKEN)%'
     app.telegramChatId: '%env(int:TELEGRAM_CHAT_ID)%'
+    jwt_user_seconds_ttl: '%env(int:JWT_USER_SECONDS_TTL)%'
 
 services:
     # default configuration for services in *this* file
@@ -31,3 +32,12 @@ services:
         arguments:
             $telegramBotToken: '%app.telegramBotToken%'
             $telegramChatId: '%app.telegramChatId%'
+
+    App\Service\TokenService:
+        arguments:
+            $jwtUserSecondsTTL: '%jwt_user_seconds_ttl%'
+
+    App\ParamConverter\RequestConverter:
+        class: App\ParamConverter\RequestConverter
+        tags:
+            - { name: request.param_converter, converter: request_converter, priority: 0 }
