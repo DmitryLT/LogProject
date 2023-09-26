@@ -49,6 +49,15 @@ security:
             stateless: true
             security: false
 
+        api:
+            pattern: ^/api
+            stateless: true
+            provider: user_provider
+            security: true
+            user_checker: App\Security\UserChecker
+            custom_authenticators:
+                - App\Security\TokenAuthenticator
+
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
 

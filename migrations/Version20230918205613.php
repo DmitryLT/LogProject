@@ -14,7 +14,7 @@ final class Version20230918205613 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'added column roles to user entity';
     }
 
     public function up(Schema $schema): void
