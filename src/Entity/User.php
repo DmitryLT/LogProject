@@ -30,6 +30,9 @@ class User  implements UserInterface
     #[ORM\Column(nullable: true)]
     private array $roles = [];
 
+    #[ORM\Column]
+    private ?bool $deleted = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -104,6 +107,18 @@ class User  implements UserInterface
     public function setRoles(?array $roles): static
     {
         $this->roles = $roles;
+
+        return $this;
+    }
+
+    public function isDeleted(): ?bool
+    {
+        return $this->deleted;
+    }
+
+    public function setDeleted(bool $deleted): static
+    {
+        $this->deleted = $deleted;
 
         return $this;
     }
