@@ -12,14 +12,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class LogController extends AbstractController
 {
-    #[Route('/lucky/number/{max}', name: 'app_lucky_number', methods:[Request::METHOD_GET])]
-    public function number(int $max): Response
-    {
-        $number = random_int(0, $max);
-
-        return new JsonResponse(['test' => $number]);
-    }
-
     #[Route('/api/logs', name: 'app_get_logs', methods:[Request::METHOD_GET])]
     public function getLogs(
         LoggerInterface $logger,

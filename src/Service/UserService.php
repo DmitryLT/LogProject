@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Controller\Api\User\Input\UserRegisterRequest;
 use App\Entity\User;
+use App\Exceptions\NeededRegistrationException;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -27,9 +28,25 @@ class UserService
         $user->setPhone($request->getPhone());
         $user->setName($request->getName());
         $user->setEmail($request->getEmail());
+        $user->setDeleted(0);
 
         $this->em->persist($user);
         $this->em->flush();
+
+        return $this->tokenService->generateApiTokenForUser($user);
+    }
+
+    /**
+     * @param string $email
+     * @return array
+     * @throws \Exception
+     */
+    public function auth(string $email): array
+    {
+        $user = $this->userRepository->findOneBy(['email' => $email]);
+        if (empty($user)) {
+            throw new NeededRegistrationException();
+        }
 
         return $this->tokenService->generateApiTokenForUser($user);
     }

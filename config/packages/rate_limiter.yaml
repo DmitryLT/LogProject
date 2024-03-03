@@ -1,0 +1,12 @@
+framework:
+  rate_limiter:
+    auth_sms:
+      policy: 'fixed_window'
+      limit: '%env(int:AUTH_EMAIL_LIMIT)%'
+      interval: '1 day'
+      lock_factory: null
+#    qr_code:
+#      policy: 'fixed_window'
+#      limit: 1
+#      interval: '%env(BARCODE_TOKEN_SECONDS_TTL)% second'
+#      lock_factory: null

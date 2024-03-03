@@ -7,12 +7,16 @@ parameters:
     app.telegramBotToken: '%env(TELEGRAM_BOT_TOKEN)%'
     app.telegramChatId: '%env(int:TELEGRAM_CHAT_ID)%'
     jwt_user_seconds_ttl: '%env(int:JWT_USER_SECONDS_TTL)%'
+    enable_email_auth_code: '%env(int:ENABLE_EMAIL_AUTH_CODE)%'
+    support_email: '%env(SUPPORT_EMAIL)%'
 
 services:
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            $enableEmailAuthCode: '%enable_email_auth_code%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -23,8 +27,13 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    Symfony\Component\RateLimiter\RateLimiterFactory:
+        class: Symfony\Component\RateLimiter\RateLimiterFactory
+
     ltdsh\TelegramBotSender\TelegramBotSender:
         class: ltdsh\TelegramBotSender\TelegramBotSender
+
+    Redis: '@snc_redis.default'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
@@ -36,6 +45,10 @@ services:
     App\Service\TokenService:
         arguments:
             $jwtUserSecondsTTL: '%jwt_user_seconds_ttl%'
+
+    App\Service\EmailSendService:
+        arguments:
+            $supportEmail: '%support_email%'
 
     App\ParamConverter\RequestConverter:
         class: App\ParamConverter\RequestConverter
